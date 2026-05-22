@@ -84,6 +84,15 @@ body::before {
   animation: blink 1s steps(1, end) infinite;
 }
 
+.terminal-input {
+  position: fixed;
+  left: -100vw;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

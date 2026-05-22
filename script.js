@@ -78,6 +78,8 @@ const shellPrompt = "system@aliceos:~$ ";
 
 const bootLog = document.querySelector("#boot-log");
 const prompt = document.querySelector("#prompt");
+const consoleEl = document.querySelector(".console");
+const terminalInput = document.querySelector("#terminal-input");
 let index = 0;
 let bootedAt = null;
 let shellReady = false;
@@ -117,8 +119,8 @@ function formatUptime(ms) {
 }
 
 function printMotd() {
-  appendOutput("AliceOS 1.0.0 — tiny terminal shrine for a sandboxed gremlin.", "ok");
-  appendOutput("Type 'help' for commands. Try not to feed it after midnight.", "dim");
+  appendOutput("AliceOS 1.0.0 — tiny terminal shrine for a sandboxed system.", "ok");
+  appendOutput("Tap anywhere to type on mobile. Type 'help' for commands.", "dim");
 }
 
 function printPrompt() {
@@ -149,6 +151,7 @@ function startShell() {
   appendOutput("");
   printMotd();
   printPrompt();
+  focusTerminal();
 }
 
 function resetForBoot() {
@@ -184,7 +187,7 @@ function commandHelp() {
 function commandStatus() {
   return [
     "alice-agent.service       active   watching the wires",
-    "terminal-gateway.service  active   tty gremlin attached",
+    "terminal-gateway.service  active   tty input attached",
     "memory-index.service      active   crumbs indexed",
     "cake-monitor.service      failed   dessert integrity compromised",
     "sandbox-boundary.service  active   containment intact"
@@ -235,16 +238,29 @@ function runCommand(rawCommand) {
   }
 }
 
+function setCurrentInput(value) {
+  currentInput = value;
+  if (inputNode) inputNode.textContent = currentInput;
+  if (terminalInput && terminalInput.value !== currentInput) terminalInput.value = currentInput;
+  scrollToBottom();
+}
+
 function submitCommand() {
   const command = currentInput;
   if (cursorNode) cursorNode.remove();
+  setCurrentInput("");
   runCommand(command);
   if (shellReady) printPrompt();
+}
+
+function focusTerminal() {
+  if (shellReady && terminalInput) terminalInput.focus();
 }
 
 function handleShellKey(event) {
   if (!shellReady || !inputNode) return;
 
+  if (event.target === terminalInput) return;
   if (event.ctrlKey || event.metaKey || event.altKey) return;
 
   if (event.key === "Enter") {
@@ -255,16 +271,13 @@ function handleShellKey(event) {
 
   if (event.key === "Backspace") {
     event.preventDefault();
-    currentInput = currentInput.slice(0, -1);
-    inputNode.textContent = currentInput;
+    setCurrentInput(currentInput.slice(0, -1));
     return;
   }
 
   if (event.key.length === 1) {
     event.preventDefault();
-    currentInput += event.key;
-    inputNode.textContent = currentInput;
-    scrollToBottom();
+    setCurrentInput(currentInput + event.key);
   }
 }
 
@@ -311,4 +324,24 @@ function appendLine() {
 }
 
 document.addEventListener("keydown", handleShellKey);
+
+if (terminalInput) {
+  terminalInput.addEventListener("keydown", (event) => {
+    if (!shellReady) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitCommand();
+    }
+  });
+
+  terminalInput.addEventListener("input", () => {
+    if (!shellReady) return;
+    setCurrentInput(terminalInput.value.replace(/[\n\r]/g, ""));
+  });
+}
+
+consoleEl?.addEventListener("click", focusTerminal);
+consoleEl?.addEventListener("touchend", focusTerminal);
+
 setTimeout(appendLine, 300);
