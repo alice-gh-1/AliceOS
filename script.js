@@ -72,9 +72,10 @@ const bootLines = [
 const shellPrompt = "system@aliceos:~$ ";
 const files = {
   "about.txt": "AliceOS: a tiny terminal-style page.",
-  "notes.txt": "Mobile typing works by tapping anywhere after boot."
+  "notes.txt": "Mobile typing works by tapping anywhere after boot.",
+  "cake.txt": "the cake is a lie"
 };
-const directories = ["about.txt", "notes.txt"];
+const directories = ["about.txt", "notes.txt", "cake.txt"];
 
 const bootLog = document.querySelector("#boot-log");
 const prompt = document.querySelector("#prompt");
